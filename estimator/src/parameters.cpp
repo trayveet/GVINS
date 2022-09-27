@@ -31,7 +31,9 @@ std::string GNSS_IONO_PARAMS_TOPIC;
 std::string GNSS_TP_INFO_TOPIC;
 std::vector<double> GNSS_IONO_DEFAULT_PARAMS;
 bool GNSS_LOCAL_ONLINE_SYNC;
+bool GNSS_LOCAL_TIME_DIFF_PUBLISHED;
 std::string LOCAL_TRIGGER_INFO_TOPIC;
+std::string GNSS_LOCAL_TIME_DIFF_TOPIC;
 double GNSS_LOCAL_TIME_DIFF;
 double GNSS_ELEVATION_THRES;
 double GNSS_PSR_STD_THRES;
@@ -39,6 +41,10 @@ double GNSS_DOPP_STD_THRES;
 uint32_t GNSS_TRACK_NUM_THRES;
 double GNSS_DDT_WEIGHT;
 std::string GNSS_RESULT_PATH;
+
+bool AMRL_LOCALIZATION_ENABLE;
+std::string AMRL_MAP;
+Eigen::Vector3d AMRL_MAP_CENTER;
 
 template <typename T>
 T readParam(ros::NodeHandle &n, std::string name)
@@ -166,11 +172,21 @@ void readParameters(ros::NodeHandle &n)
         
         fsSettings["gnss_tp_info_topic"] >> GNSS_TP_INFO_TOPIC;
         int gnss_local_online_sync_value = fsSettings["gnss_local_online_sync"];
+        int gnss_local_time_diff_published_value = fsSettings["gnss_local_time_diff_published"];
         GNSS_LOCAL_ONLINE_SYNC = (gnss_local_online_sync_value == 0 ? false : true);
+        GNSS_LOCAL_TIME_DIFF_PUBLISHED = (gnss_local_time_diff_published_value == 0 ? false : true);
         if (GNSS_LOCAL_ONLINE_SYNC)
             fsSettings["local_trigger_info_topic"] >> LOCAL_TRIGGER_INFO_TOPIC;
+        else if (GNSS_LOCAL_TIME_DIFF_PUBLISHED)
+        {
+            fsSettings["gnss_local_time_diff_topic"] >> GNSS_LOCAL_TIME_DIFF_TOPIC;
+            GNSS_LOCAL_TIME_DIFF = fsSettings["gnss_local_time_diff"]; 
+        }
         else
-            GNSS_LOCAL_TIME_DIFF = fsSettings["gnss_local_time_diff"];
+        {
+            GNSS_LOCAL_TIME_DIFF = fsSettings["gnss_local_time_diff"];            
+        }
+
 
         GNSS_ELEVATION_THRES = fsSettings["gnss_elevation_thres"];
         const double gnss_ddt_sigma = fsSettings["gnss_ddt_sigma"];
@@ -184,6 +200,16 @@ void readParameters(ros::NodeHandle &n)
         std::ofstream gnss_output(GNSS_RESULT_PATH, std::ios::out);
         gnss_output.close();
         ROS_INFO_STREAM("GNSS enabled");
+    }
+
+    int amrl_localization_enable_value = fsSettings["amrl_localization_enable"];
+    AMRL_LOCALIZATION_ENABLE = (amrl_localization_enable_value == 0 ? false : true);
+    if (AMRL_LOCALIZATION_ENABLE)
+    {
+        fsSettings["amrl_map"] >> AMRL_MAP;
+        AMRL_MAP_CENTER.x() = fsSettings["amrl_map_latitude"];
+        AMRL_MAP_CENTER.y() = fsSettings["amrl_map_longitude"];
+        AMRL_MAP_CENTER.z() = fsSettings["amrl_mal_altitude"];
     }
 
     fsSettings.release();

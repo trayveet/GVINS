@@ -625,8 +625,8 @@ bool Estimator::GNSSVIAlign()
         std::cerr << "Fail to refine anchor point.\n";
         return false;
     }
-    // std::cout << "refined anchor point is " << std::setprecision(20) 
-    //           << refined_xyzt.head<3>().transpose() << '\n';
+     std::cout << "refined anchor point is " << std::setprecision(20) 
+               << refined_xyzt.head<3>().transpose() << '\n';
 
     // restore GNSS states
     uint32_t one_observed_sys = static_cast<uint32_t>(-1);
@@ -653,6 +653,9 @@ bool Estimator::GNSSVIAlign()
     R_ecef_enu = ecef2rotation(anc_ecef);
 
     yaw_enu_local = aligned_yaw;
+
+    amrl_map_center_ecef = geo2ecef(AMRL_MAP_CENTER);
+
 
     return true;
 }
@@ -837,14 +840,14 @@ bool Estimator::failureDetection()
     Vector3d tmp_P = Ps[WINDOW_SIZE];
     if ((tmp_P - last_P).norm() > 5)
     {
-        ROS_INFO(" big translation");
+        ROS_INFO(" big translation %f", (tmp_P - last_P).norm());
         return true;
     }
-    if (abs(tmp_P.z() - last_P.z()) > 1)
+/*     if (abs(tmp_P.z() - last_P.z()) > 1)
     {
         ROS_INFO(" big z translation");
         return true; 
-    }
+    } */
     Matrix3d tmp_R = Rs[WINDOW_SIZE];
     Matrix3d delta_R = tmp_R.transpose() * last_R;
     Quaterniond delta_Q(delta_R);

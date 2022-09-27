@@ -1,29 +1,28 @@
 %YAML:1.0
 
 #common parameters
-imu_topic: "/imu0"
-image_topic: "/cam1/image_raw"
-output_dir: "~/output/"
+#imu_topic: "/imu/low_pass/data_raw"
+imu_topic: "/rs/imu0/data"
+image_topic: "/rs/ir0/image"
+output_dir: "/home/trayveet/Data/Output/gvins/"
 
 #camera calibration 
-model_type: MEI
+model_type: PINHOLE
 camera_name: camera
-image_width: 752
+image_width: 640
 image_height: 480
-mirror_parameters:
-   xi: 1.8476540167437447
 distortion_parameters:
-   k1: -0.06597811223735722
-   k2: 0.8559479340704287
-   p1: -0.0006445829733139821
-   p2: 0.0015137487236065916
+   k1: 0.01308064
+   k2: -0.00546315
+   p1: -0.00194189
+   p2: 0.00687374
 projection_parameters:
-   gamma1: 1338.1845333957547
-   gamma2: 1340.1190112672946
-   u0: 378.7909740462579
-   v0: 217.69105287172025
+   fx: 389.75244464
+   fy: 387.96067921
+   cx: 331.49985938
+   cy: 229.15638747
 
-gnss_enable: 0
+gnss_enable: 1
 gnss_meas_topic: "/ublox_driver/range_meas"           # GNSS raw measurement topic
 gnss_ephem_topic: "/ublox_driver/ephem"               # GPS, Galileo, BeiDou ephemeris
 gnss_glo_ephem_topic: "/ublox_driver/glo_ephem"       # GLONASS ephemeris
@@ -32,12 +31,14 @@ gnss_tp_info_topic: "/ublox_driver/time_pulse_info"   # PPS time info
 gnss_elevation_thres: 30            # satellite elevation threshold (degree)
 gnss_psr_std_thres: 2.0             # pseudo-range std threshold
 gnss_dopp_std_thres: 2.0            # doppler std threshold
-gnss_track_num_thres: 20            # number of satellite tracking epochs before entering estimator
+gnss_track_num_thres: 15            # number of satellite tracking epochs before entering estimator
 gnss_ddt_sigma: 0.1
 
-gnss_local_online_sync: 1                       # if perform online synchronization betwen GNSS and local time
-local_trigger_info_topic: "/external_trigger"   # external trigger info of the local sensor, if `gnss_local_online_sync` is 1
-gnss_local_time_diff: 0.0                      # difference between GNSS and local time (s), if `gnss_local_online_sync` is 0
+gnss_local_online_sync: 0                                # if perform online synchronization betwen GNSS and local time
+local_trigger_info_topic: "/external_trigger"            # external trigger info of the local sensor, if `gnss_local_online_sync` is 1
+gnss_local_time_diff: 17.9                               # difference between GNSS and local time (s), if `gnss_local_online_sync` is 0
+gnss_local_time_diff_published: 1                        # gps driver is publishing the time difference  
+gnss_local_time_diff_topic: "/ublox_driver/delta_time"   # time diff topic
 
 gnss_iono_default_parameters: !!opencv-matrix
    rows: 1
@@ -56,15 +57,15 @@ extrinsicRotation: !!opencv-matrix
    rows: 3
    cols: 3
    dt: d
-   data: [0.9999890386957373, -0.0043227774403168, 0.0017989117755288, 
-          0.0043276579084841, 0.9999869417854389, -0.0027180205355500, 
-         -0.0017871388870994, 0.0027257758172719, 0.9999946881262878]
+   data: [0.99992724, -0.01054832, 0.00585135, 
+          0.01048953, 0.99989509, 0.00998853, 
+         -0.0059561, -0.00992643, 0.99993299]
 #Translation from camera frame to imu frame, imu^T_cam
 extrinsicTranslation: !!opencv-matrix
    rows: 3
    cols: 1
    dt: d
-   data: [-0.0759472920952561, -0.0039320527565750, -0.0016395029500217]
+   data: [0.00322414, -0.01212793, -0.02028277]
 
 #feature traker paprameters
 max_cnt: 150            # max feature number in feature tracking
@@ -81,15 +82,15 @@ max_num_iterations: 8   # max solver itrations, to guarantee real time
 keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
 
 #imu parameters       The more accurate parameters you provide, the better performance
-acc_n: 0.08          # accelerometer measurement noise standard deviation. #0.2   0.04
-gyr_n: 0.004         # gyroscope measurement noise standard deviation.     #0.05  0.004
-acc_w: 0.00004         # accelerometer bias random work noise standard deviation.  #0.02
-gyr_w: 2.0e-6       # gyroscope bias random work noise standard deviation.     #4.0e-5
-g_norm: 9.787561     # gravity magnitude
+acc_n: 0.0373          # accelerometer measurement noise standard deviation. #0.2   0.04
+gyr_n: 0.03737         # gyroscope measurement noise standard deviation.     #0.05  0.004
+acc_w: 0.0002         # accelerometer bias random work noise standard deviation.  #0.002
+gyr_w: 0.000001       # gyroscope bias random work noise standard deviation.     #4.0e-5
+g_norm: 9.80615977         # gravity magnitude
 
 #unsynchronization parameters
-estimate_td: 0                      # online estimate time offset between camera and imu
-td: 0.0                             # initial value of time offset. unit: s. readed image clock + td = real image clock (IMU clock)
+estimate_td: 1                      # online estimate time offset between camera and imu
+td: 0.00732677665793                             # initial value of time offset. unit: s. readed image clock + td = real image clock (IMU clock)
 
 #amrl localization parameters
 amrl_localization_enable: 1          # 1 if we want to publish amrl localization message

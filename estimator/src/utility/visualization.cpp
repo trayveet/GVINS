@@ -1,7 +1,11 @@
 #include "visualization.h"
+#include "amrl_msgs/Localization2DMsg.h"
+
 
 using namespace ros;
 using namespace Eigen;
+using amrl_msgs::Localization2DMsg;
+
 ros::Publisher pub_odometry, pub_latest_odometry;
 ros::Publisher pub_path;
 ros::Publisher pub_point_cloud, pub_margin_cloud;
@@ -21,6 +25,8 @@ ros::Publisher pub_anc_lla;
 ros::Publisher pub_enu_pose;
 ros::Publisher pub_sat_info;
 ros::Publisher pub_yaw_enu_local;
+
+ros::Publisher pub_amrl_localization;
 
 CameraPoseVisualization cameraposevisual(0, 1, 0, 1);
 CameraPoseVisualization keyframebasevisual(0.0, 0.0, 1.0, 1.0);
@@ -44,6 +50,7 @@ void registerPub(ros::NodeHandle &n)
     pub_enu_path = n.advertise<nav_msgs::Path>("gnss_enu_path", 1000);
     pub_anc_lla = n.advertise<sensor_msgs::NavSatFix>("gnss_anchor_lla", 1000);
     pub_enu_pose = n.advertise<geometry_msgs::PoseStamped>("enu_pose", 1000);
+    pub_amrl_localization = n.advertise<amrl_msgs::Localization2DMsg>("localization", 1000, true);
 
     cameraposevisual.setScale(1);
     cameraposevisual.setLineWidth(0.05);
@@ -177,8 +184,8 @@ void pubGnssResult(const Estimator &estimator, const std_msgs::Header &header)
     const double gnss_ts = estimator.Headers[WINDOW_SIZE].stamp.toSec() + 
         estimator.diff_t_gnss_local;
     Eigen::Vector3d lla_pos = ecef2geo(estimator.ecef_pos);
-    printf("global time: %f\n", gnss_ts);
-    printf("latitude longitude altitude: %f, %f, %f\n", lla_pos.x(), lla_pos.y(), lla_pos.z());
+    //printf("global time: %f\n", gnss_ts);
+    //printf("latitude longitude altitude: %f, %f, %f\n", lla_pos.x(), lla_pos.y(), lla_pos.z());
     sensor_msgs::NavSatFix gnss_lla_msg;
     gnss_lla_msg.header.stamp = ros::Time(gnss_ts);
     gnss_lla_msg.header.frame_id = "geodetic";
@@ -219,6 +226,20 @@ void pubGnssResult(const Estimator &estimator, const std_msgs::Header &header)
     enu_path.header = enu_pose_msg.header;
     enu_path.poses.push_back(enu_pose_msg);
     pub_enu_path.publish(enu_path);
+
+    //publish amrl_localization 
+    amrl_msgs::Localization2DMsg amrl_localization_msg;
+
+    Eigen::Vector3d amrl_pos = ecef2enu(AMRL_MAP_CENTER, estimator.ecef_pos - estimator.amrl_map_center_ecef);
+
+    amrl_localization_msg.header.stamp = header.stamp;
+    amrl_localization_msg.header.frame_id = "world";
+    amrl_localization_msg.map = AMRL_MAP;
+    amrl_localization_msg.pose.x = amrl_pos.x();
+    amrl_localization_msg.pose.y = amrl_pos.y();
+    amrl_localization_msg.pose.theta = (90 + estimator.enu_ypr.x()) * M_PI / 180.0;  
+    //printf("enu ypr %f %f %f\n", estimator.enu_ypr.x(), estimator.enu_ypr.y(), estimator.enu_ypr.z());
+    pub_amrl_localization.publish(amrl_localization_msg);
 
     // publish ENU-local tf
     Eigen::Quaterniond q_enu_world(estimator.R_enu_local);

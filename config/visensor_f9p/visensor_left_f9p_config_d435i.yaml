@@ -3,7 +3,7 @@
 #common parameters
 imu_topic: "/rs/imu0/data"
 image_topic: "/rs/ir0/image"
-output_dir: "/home/dev/Data/Output/gvins/"
+output_dir: "/home/trayveet/Data/Output/gvins/"
 
 #camera calibration 
 model_type: PINHOLE
@@ -21,7 +21,7 @@ projection_parameters:
    cx: 331.49985938
    cy: 229.15638747
 
-gnss_enable: 1
+gnss_enable: 0
 gnss_meas_topic: "/ublox_driver/range_meas"           # GNSS raw measurement topic
 gnss_ephem_topic: "/ublox_driver/ephem"               # GPS, Galileo, BeiDou ephemeris
 gnss_glo_ephem_topic: "/ublox_driver/glo_ephem"       # GLONASS ephemeris
@@ -35,7 +35,7 @@ gnss_ddt_sigma: 0.1
 
 gnss_local_online_sync: 0                       # if perform online synchronization betwen GNSS and local time
 local_trigger_info_topic: "/external_trigger"   # external trigger info of the local sensor, if `gnss_local_online_sync` is 1
-gnss_local_time_diff: 18.0                      # difference between GNSS and local time (s), if `gnss_local_online_sync` is 0
+gnss_local_time_diff: 0.0                      # difference between GNSS and local time (s), if `gnss_local_online_sync` is 0
 
 gnss_iono_default_parameters: !!opencv-matrix
    rows: 1
@@ -67,7 +67,7 @@ extrinsicTranslation: !!opencv-matrix
 #feature traker paprameters
 max_cnt: 300            # max feature number in feature tracking
 min_dist: 30            # min distance between two features 
-freq: 6                # frequence (Hz) of publish tracking result. At least 10Hz for good estimation. If set 0, the frequence will be same as raw image 
+freq: 0                # frequence (Hz) of publish tracking result. At least 10Hz for good estimation. If set 0, the frequence will be same as raw image 
 F_threshold: 1.0        # ransac threshold (pixel)
 show_track: 1           # publish tracking image as topic
 equalize: 0             # if image is too dark or light, trun on equalize to find enough features
@@ -88,3 +88,10 @@ g_norm: 9.80615977         # gravity magnitude
 #unsynchronization parameters
 estimate_td: 1                      # online estimate time offset between camera and imu
 td: 0.00732677665793                             # initial value of time offset. unit: s. readed image clock + td = real image clock (IMU clock)
+
+#amrl localization parameters
+amrl_localization_enable: 1          # 1 if we want to publish amrl localization message
+amrl_map: "Chickasaw_Home"
+amrl_map_latitude: 28.51543760   #lla for the amrl map center
+amrl_map_longitude: -81.26973413
+amrl_mal_altitude: -2.65

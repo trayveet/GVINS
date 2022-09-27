@@ -46,7 +46,9 @@ extern std::string GNSS_IONO_PARAMS_TOPIC;
 extern std::string GNSS_TP_INFO_TOPIC;
 extern std::vector<double> GNSS_IONO_DEFAULT_PARAMS;
 extern bool GNSS_LOCAL_ONLINE_SYNC;
+extern bool GNSS_LOCAL_TIME_DIFF_PUBLISHED;
 extern std::string LOCAL_TRIGGER_INFO_TOPIC;
+extern std::string GNSS_LOCAL_TIME_DIFF_TOPIC;
 extern double GNSS_LOCAL_TIME_DIFF;
 extern double GNSS_ELEVATION_THRES;
 extern double GNSS_PSR_STD_THRES;
@@ -54,6 +56,10 @@ extern double GNSS_DOPP_STD_THRES;
 extern uint32_t GNSS_TRACK_NUM_THRES;
 extern double GNSS_DDT_WEIGHT;
 extern std::string GNSS_RESULT_PATH;
+
+extern bool AMRL_LOCALIZATION_ENABLE;
+extern std::string AMRL_MAP;
+extern Eigen::Vector3d AMRL_MAP_CENTER;
 
 void readParameters(ros::NodeHandle &n);
 

@@ -127,6 +127,8 @@ class Estimator
     Eigen::Matrix3d R_enu_local;
     Eigen::Vector3d ecef_pos, enu_pos, enu_vel, enu_ypr;
 
+    Eigen::Vector3d amrl_map_center_ecef;
+
     int frame_count;
     int sum_of_outlier, sum_of_back, sum_of_front, sum_of_invalid;
 

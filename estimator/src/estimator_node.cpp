@@ -11,6 +11,7 @@
 #include <gnss_comm/gnss_utility.hpp>
 #include <gvins/LocalSensorExternalTrigger.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <sensor_msgs/TimeReference.h>
 
 #include "estimator.h"
 #include "parameters.h"
@@ -18,7 +19,7 @@
 
 using namespace gnss_comm;
 
-#define MAX_GNSS_CAMERA_DELAY 0.05
+#define MAX_GNSS_CAMERA_DELAY 0.067
 
 std::unique_ptr<Estimator> estimator_ptr;
 
@@ -297,6 +298,16 @@ void gnss_tp_info_callback(const GnssTimePulseInfoMsgConstPtr &tp_msg)
     next_pulse_time_valid = true;
 }
 
+void gnss_local_time_diff_callback(const sensor_msgs::TimeReference &diff_msgs){
+
+    double time_diff = diff_msgs.time_ref.toSec();
+
+    time_diff_gnss_local = time_diff;
+    estimator_ptr->inputGNSSTimeDiff(time_diff_gnss_local);
+    time_diff_valid = true;
+
+}
+
 void restart_callback(const std_msgs::BoolConstPtr &restart_msg)
 {
     if (restart_msg->data == true)
@@ -454,7 +465,7 @@ int main(int argc, char **argv)
     ros::Subscriber sub_restart = n.subscribe("/gvins_feature_tracker/restart", 2000, restart_callback);
 
     ros::Subscriber sub_ephem, sub_glo_ephem, sub_gnss_meas, sub_gnss_iono_params;
-    ros::Subscriber sub_gnss_time_pluse_info, sub_local_trigger_info;
+    ros::Subscriber sub_gnss_time_pluse_info, sub_local_trigger_info, sub_gnss_local_time_diff;
     if (GNSS_ENABLE)
     {
         sub_ephem = n.subscribe(GNSS_EPHEM_TOPIC, 100, gnss_ephem_callback);
@@ -468,6 +479,13 @@ int main(int argc, char **argv)
                 gnss_tp_info_callback);
             sub_local_trigger_info = n.subscribe(LOCAL_TRIGGER_INFO_TOPIC, 100, 
                 local_trigger_info_callback);
+        }
+        else if (GNSS_LOCAL_TIME_DIFF_PUBLISHED)
+        {
+            time_diff_gnss_local = GNSS_LOCAL_TIME_DIFF;
+            estimator_ptr->inputGNSSTimeDiff(time_diff_gnss_local);
+            time_diff_valid = true;
+            sub_gnss_local_time_diff = n.subscribe(GNSS_LOCAL_TIME_DIFF_TOPIC, 100, gnss_local_time_diff_callback);
         }
         else
         {
